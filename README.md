@@ -26,10 +26,10 @@ Run these in order on the remote machine. Each script is self-contained and acti
 
 | Script | What it does | Time |
 |--------|-------------|------|
-| `01-setup-env.sh` | Install Miniconda, Python 3.13, mlc_llm (CPU), git-lfs | ~3 min |
-| `02-download-model.sh` | Clone TAID-LLM-1.5B from HuggingFace | ~2-5 min |
-| `03-convert-weights.sh` | Quantize weights to q4f32_1 → `params_shard_*.bin` + `ndarray-cache.json` | ~5-15 min |
-| `04-gen-config.sh` | Generate `mlc-chat-config.json` + copy tokenizer files | ~30 sec |
+| `01-setup-env.sh` | Install Miniconda, Python 3.13, mlc_llm (CPU), git-lfs | ~45 min |
+| `02-download-model.sh` | Clone TAID-LLM-1.5B from HuggingFace | ~2 min |
+| `03-convert-weights.sh` | Quantize weights to q4f32_1 → `params_shard_*.bin` + `ndarray-cache.json` | ~5 min |
+| `04-gen-config.sh` | Generate `mlc-chat-config.json` + copy tokenizer files | ~3 mins |
 | `05-upload-hf.sh` | Upload converted model to your HuggingFace account | ~5 min |
 
 ```bash

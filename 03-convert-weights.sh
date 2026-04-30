@@ -13,6 +13,18 @@ python -m mlc_llm convert_weight \
     --quantization q4f32_1 \
     -o ./TAID-LLM-1.5B-q4f32_1-MLC/
 
+# Rename tensor-cache.json -> ndarray-cache.json for web-llm compatibility
+# (mlc_llm renamed this in Sept 2025, but web-llm still expects the old name)
+cd TAID-LLM-1.5B-q4f32_1-MLC/
+if [ -f "tensor-cache.json" ] && [ ! -f "ndarray-cache.json" ]; then
+    echo "Renaming tensor-cache.json -> ndarray-cache.json (web-llm compat)"
+    mv tensor-cache.json ndarray-cache.json
+fi
+if [ -f "tensor-cache-b16.json" ] && [ ! -f "ndarray-cache-b16.json" ]; then
+    mv tensor-cache-b16.json ndarray-cache-b16.json
+fi
+cd ..
+
 echo ""
 echo "=== Verification ==="
 echo "Output files:"
