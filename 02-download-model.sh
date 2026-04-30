@@ -7,6 +7,12 @@ conda activate mlc-convert
 
 echo "=== Step 2: Download TAID-LLM-1.5B ==="
 
+# Clean output directory from previous runs
+if [ -d "TAID-LLM-1.5B-q4f32_1-MLC" ]; then
+    echo "Cleaning previous output directory..."
+    rm -rf TAID-LLM-1.5B-q4f32_1-MLC
+fi
+
 if [ -d "TAID-LLM-1.5B" ]; then
     echo "Model directory already exists. Skipping download."
 else
