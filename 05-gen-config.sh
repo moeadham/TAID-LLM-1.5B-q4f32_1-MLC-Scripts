@@ -11,6 +11,7 @@ python -m mlc_llm gen_config \
     ./TAID-LLM-1.5B/ \
     --quantization q4f32_1 \
     --conv-template qwen2 \
+    --prefill-chunk-size 2048 \
     -o ./TAID-LLM-1.5B-q4f32_1-MLC/
 
 echo ""
