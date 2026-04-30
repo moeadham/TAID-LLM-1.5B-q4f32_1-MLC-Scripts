@@ -1,20 +1,33 @@
 #!/bin/bash
 set -euo pipefail
 
-echo "=== Step 1: Install Miniconda + Python 3.13 + mlc_llm ==="
+# Install everything in the current working directory (network volume)
+BASEDIR="$(pwd)"
+CONDA_DIR="$BASEDIR/.conda"
+PIP_CACHE="$BASEDIR/.pip-cache"
 
-# Install Miniconda if not present
-if [ ! -d "$HOME/miniconda3" ]; then
+export TMPDIR="$BASEDIR/.tmp"
+mkdir -p "$TMPDIR" "$PIP_CACHE"
+
+echo "=== Step 1: Install Miniconda + Python 3.13 + mlc_llm ==="
+echo "Installing to: $BASEDIR"
+
+# Install Miniconda into pwd
+if [ ! -d "$CONDA_DIR" ]; then
     echo "Installing Miniconda..."
-    wget -q https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/miniconda.sh
-    bash /tmp/miniconda.sh -b -p "$HOME/miniconda3"
-    rm /tmp/miniconda.sh
+    wget -q https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O "$TMPDIR/miniconda.sh"
+    bash "$TMPDIR/miniconda.sh" -b -p "$CONDA_DIR"
+    rm "$TMPDIR/miniconda.sh"
 else
-    echo "Miniconda already installed."
+    echo "Miniconda already installed at $CONDA_DIR"
 fi
 
 # Initialize conda for current shell
-eval "$($HOME/miniconda3/bin/conda shell.bash hook)"
+eval "$($CONDA_DIR/bin/conda shell.bash hook)"
+
+# Keep conda packages on the network volume too
+conda config --set pkgs_dirs "$BASEDIR/.conda-pkgs"
+conda config --set envs_dirs "$BASEDIR/.conda-envs"
 
 # Accept Anaconda ToS
 conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
@@ -30,9 +43,9 @@ fi
 
 conda activate mlc-convert
 
-# Install mlc_llm (CPU-only)
+# Install mlc_llm (CPU-only), cache to network volume
 echo "Installing mlc_llm nightly (CPU)..."
-pip install --pre -U -f https://mlc.ai/wheels mlc-llm-nightly-cpu mlc-ai-nightly-cpu
+pip install --cache-dir "$PIP_CACHE" --pre -U -f https://mlc.ai/wheels mlc-llm-nightly-cpu mlc-ai-nightly-cpu
 
 # Install git-lfs
 echo "Installing git-lfs..."

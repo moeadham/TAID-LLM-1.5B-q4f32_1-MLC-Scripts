@@ -1,12 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
-eval "$($HOME/miniconda3/bin/conda shell.bash hook)"
+BASEDIR="$(pwd)"
+eval "$($BASEDIR/.conda/bin/conda shell.bash hook)"
 conda activate mlc-convert
-
-WORKDIR="$HOME/mlc-workspace"
-mkdir -p "$WORKDIR"
-cd "$WORKDIR"
 
 echo "=== Step 2: Download TAID-LLM-1.5B ==="
 

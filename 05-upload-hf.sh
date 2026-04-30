@@ -1,11 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
-eval "$($HOME/miniconda3/bin/conda shell.bash hook)"
+BASEDIR="$(pwd)"
+eval "$($BASEDIR/.conda/bin/conda shell.bash hook)"
 conda activate mlc-convert
-
-WORKDIR="$HOME/mlc-workspace"
-cd "$WORKDIR"
 
 # Set your HuggingFace username here
 HF_USERNAME="${HF_USERNAME:-}"
