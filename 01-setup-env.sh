@@ -58,6 +58,6 @@ echo ""
 echo "=== Verification ==="
 python --version
 python -c "import mlc_llm; print(f'mlc_llm installed at: {mlc_llm.__path__}')"
-mlc_llm --help | head -5
+python -m mlc_llm --help | head -5
 echo ""
 echo "=== Step 1 complete ==="

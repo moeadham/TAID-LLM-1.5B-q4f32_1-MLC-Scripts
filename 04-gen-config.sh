@@ -7,7 +7,7 @@ conda activate mlc-convert
 
 echo "=== Step 4: Generate MLC config ==="
 
-mlc_llm gen_config \
+python -m mlc_llm gen_config \
     ./TAID-LLM-1.5B/ \
     --quantization q4f32_1 \
     --conv-template qwen2 \
