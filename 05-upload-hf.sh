@@ -2,8 +2,7 @@
 set -euo pipefail
 
 BASEDIR="$(pwd)"
-eval "$($BASEDIR/.conda/bin/conda shell.bash hook)"
-conda activate mlc-convert
+export PATH="$BASEDIR/.conda-envs/mlc-convert/bin:$PATH"
 
 # Set your HuggingFace username and token
 HF_USERNAME="${HF_USERNAME:-}"
