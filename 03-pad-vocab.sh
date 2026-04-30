@@ -3,9 +3,8 @@ set -euo pipefail
 
 # TAID-LLM-1.5B has vocab_size=151,646 but the precompiled
 # Qwen2-1.5B-Instruct WASM expects vocab_size=151,936.
-# This script pads the embedding/lm_head weights with zeros
-# and adds the missing special tokens so the model matches
-# the precompiled WASM at inference time.
+# This script pads the embedding weights with zeros and replaces
+# the tokenizer with Qwen2.5-1.5B-Instruct's full tokenizer.
 
 BASEDIR="$(pwd)"
 eval "$($BASEDIR/.conda/bin/conda shell.bash hook)"
@@ -17,13 +16,13 @@ echo "=== Step 3: Pad vocab to match precompiled WASM ==="
 echo "TAID vocab_size=151,646 -> Qwen2-1.5B-Instruct vocab_size=151,936"
 echo ""
 
-# Download the tokenizer files from the original Qwen2.5-1.5B-Instruct
+# Download tokenizer files from the original Qwen2.5-1.5B-Instruct
 # (the model the precompiled WASM was built for)
 QWEN_BASE="https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct/resolve/main"
 echo "Downloading Qwen2.5-1.5B-Instruct tokenizer files..."
 wget -q -O "$MODEL_DIR/tokenizer_config.json" "$QWEN_BASE/tokenizer_config.json"
 wget -q -O "$MODEL_DIR/tokenizer.json" "$QWEN_BASE/tokenizer.json"
-echo "  tokenizer_config.json and tokenizer.json replaced with Qwen2.5-1.5B-Instruct versions"
+echo "  Replaced tokenizer_config.json and tokenizer.json"
 
 python << 'PYEOF'
 import json
@@ -34,59 +33,49 @@ from safetensors.torch import load_file, save_file
 MODEL_DIR = "TAID-LLM-1.5B"
 OLD_VOCAB = 151646
 NEW_VOCAB = 151936
-PAD_ROWS = NEW_VOCAB - OLD_VOCAB  # 290
 
 # --- 1. Update config.json ---
 config_path = os.path.join(MODEL_DIR, "config.json")
 with open(config_path) as f:
     config = json.load(f)
+
+if config["vocab_size"] == NEW_VOCAB:
+    print("Already padded (vocab_size=151936). Skipping.")
+    raise SystemExit(0)
+
 assert config["vocab_size"] == OLD_VOCAB, \
-    f"Expected vocab_size={OLD_VOCAB}, got {config['vocab_size']}"
+    f"Unexpected vocab_size={config['vocab_size']}, expected {OLD_VOCAB}"
 config["vocab_size"] = NEW_VOCAB
 with open(config_path, "w") as f:
     json.dump(config, f, indent=2)
-print(f"[1/3] config.json: vocab_size {OLD_VOCAB} -> {NEW_VOCAB}")
+print(f"[1/2] config.json: vocab_size {OLD_VOCAB} -> {NEW_VOCAB}")
 
-# --- 2. Pad embedding + lm_head weights ---
+# --- 2. Pad model.embed_tokens.weight ---
+# Both TAID and Qwen2.5-1.5B-Instruct use tie_word_embeddings=True,
+# so lm_head shares embed_tokens — only one tensor to pad.
 EMBED_KEY = "model.embed_tokens.weight"
-LM_HEAD_KEY = "lm_head.weight"
+PAD_ROWS = NEW_VOCAB - OLD_VOCAB  # 290
 
 safetensor_files = sorted([
     f for f in os.listdir(MODEL_DIR)
     if f.endswith(".safetensors")
 ])
-print(f"[2/3] Found safetensors: {safetensor_files}")
+print(f"[2/2] Found safetensors: {safetensor_files}")
 
-padded = set()
+found = False
 for sf_file in safetensor_files:
     sf_path = os.path.join(MODEL_DIR, sf_file)
     tensors = load_file(sf_path)
 
-    modified = False
-    for key in [EMBED_KEY, LM_HEAD_KEY]:
-        if key in tensors:
-            old = tensors[key]
-            pad = torch.zeros(PAD_ROWS, old.shape[1], dtype=old.dtype)
-            tensors[key] = torch.cat([old, pad], dim=0)
-            print(f"      {key}: {list(old.shape)} -> {list(tensors[key].shape)}")
-            padded.add(key)
-            modified = True
-
-    if modified:
+    if EMBED_KEY in tensors:
+        old = tensors[EMBED_KEY]
+        pad = torch.zeros(PAD_ROWS, old.shape[1], dtype=old.dtype)
+        tensors[EMBED_KEY] = torch.cat([old, pad], dim=0)
+        print(f"      {EMBED_KEY}: {list(old.shape)} -> {list(tensors[EMBED_KEY].shape)}")
         save_file(tensors, sf_path)
-        print(f"      Saved {sf_file}")
+        found = True
 
-assert EMBED_KEY in padded, f"{EMBED_KEY} not found!"
-assert LM_HEAD_KEY in padded, f"{LM_HEAD_KEY} not found!"
-
-# --- 3. Verify tokenizer matches ---
-tc_path = os.path.join(MODEL_DIR, "tokenizer_config.json")
-with open(tc_path) as f:
-    tc = json.load(f)
-num_added = len(tc["added_tokens_decoder"])
-max_id = max(int(k) for k in tc["added_tokens_decoder"])
-print(f"[3/3] tokenizer_config.json: {num_added} added tokens, max id {max_id}")
-
+assert found, f"{EMBED_KEY} not found in any safetensors file!"
 print()
 print("Vocab padding complete.")
 PYEOF
@@ -101,7 +90,6 @@ tc = json.load(open('$MODEL_DIR/tokenizer_config.json'))
 print(f'  added_tokens:     {len(tc[\"added_tokens_decoder\"])}')
 max_id = max(int(k) for k in tc['added_tokens_decoder'])
 print(f'  max token id:     {max_id}')
-print(f'  special_tokens:   {len(tc[\"additional_special_tokens\"])}')
 "
 echo ""
 echo "=== Step 3 complete ==="
