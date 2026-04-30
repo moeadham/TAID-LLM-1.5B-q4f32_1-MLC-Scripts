@@ -46,7 +46,7 @@ conda activate mlc-convert
 
 # Install mlc_llm (CPU-only), cache to network volume
 echo "Installing mlc_llm nightly (CPU)..."
-pip install --cache-dir "$PIP_CACHE" --pre -U -f https://mlc.ai/wheels mlc-llm-nightly-cpu mlc-ai-nightly-cpu
+pip install --cache-dir "$PIP_CACHE" --pre -U -f https://mlc.ai/wheels mlc-llm-nightly-cpu mlc-ai-nightly-cpu pytest
 
 # Install git-lfs
 echo "Installing git-lfs..."
