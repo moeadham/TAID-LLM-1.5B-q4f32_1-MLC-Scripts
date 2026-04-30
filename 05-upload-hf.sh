@@ -19,13 +19,11 @@ REPO_NAME="TAID-LLM-1.5B-q4f32_1-MLC"
 echo "=== Step 5: Upload to HuggingFace ==="
 echo "Uploading to: ${HF_USERNAME}/${REPO_NAME}"
 
-pip install -q huggingface-hub
-
 # Login with token
-hf login --token "$HF_TOKEN"
+hf auth login --token "$HF_TOKEN"
 
 # Create repo (ignore error if already exists)
-hf repo create "$REPO_NAME" --type model || true
+hf repos create "${HF_USERNAME}/${REPO_NAME}" || true
 
 # Upload all files
 echo "Uploading files (this may take a while for ~880MB)..."
