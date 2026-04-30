@@ -5,7 +5,7 @@ BASEDIR="$(pwd)"
 eval "$($BASEDIR/.conda/bin/conda shell.bash hook)"
 conda activate mlc-convert
 
-echo "=== Step 4: Generate MLC config ==="
+echo "=== Step 5: Generate MLC config ==="
 
 python -m mlc_llm gen_config \
     ./TAID-LLM-1.5B/ \
@@ -44,7 +44,7 @@ for f in c.get('tokenizer_files', []):
 # Assertions
 assert c['model_type'] == 'qwen2', f'Wrong model_type: {c[\"model_type\"]}'
 assert c['quantization'] == 'q4f32_1', f'Wrong quantization: {c[\"quantization\"]}'
-assert c['vocab_size'] == 151646, f'Wrong vocab_size: {c[\"vocab_size\"]}'
+assert c['vocab_size'] == 151936, f'Wrong vocab_size: {c[\"vocab_size\"]}'
 assert c['model_config']['num_hidden_layers'] == 28
 assert 151643 in c['conv_template']['stop_token_ids']
 assert 151645 in c['conv_template']['stop_token_ids']
@@ -52,7 +52,7 @@ print()
 print('All assertions passed!')
 "
 echo ""
-echo "=== Step 4 complete ==="
+echo "=== Step 5 complete ==="
 echo ""
 echo "Full mlc-chat-config.json:"
 cat TAID-LLM-1.5B-q4f32_1-MLC/mlc-chat-config.json

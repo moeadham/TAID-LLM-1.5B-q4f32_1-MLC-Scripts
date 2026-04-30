@@ -5,7 +5,7 @@ BASEDIR="$(pwd)"
 eval "$($BASEDIR/.conda/bin/conda shell.bash hook)"
 conda activate mlc-convert
 
-echo "=== Step 3: Convert weights (q4f32_1 quantization) ==="
+echo "=== Step 4: Convert weights (q4f32_1 quantization) ==="
 echo "This may take 5-15 minutes depending on CPU..."
 
 python -m mlc_llm convert_weight \
@@ -13,15 +13,16 @@ python -m mlc_llm convert_weight \
     --quantization q4f32_1 \
     -o ./TAID-LLM-1.5B-q4f32_1-MLC/
 
-# Rename tensor-cache.json -> ndarray-cache.json for web-llm compatibility
-# (mlc_llm renamed this in Sept 2025, but web-llm still expects the old name)
+# Keep both names: mlc_llm outputs tensor-cache.json (web-llm 0.2.83+),
+# but older web-llm versions expect ndarray-cache.json.
 cd TAID-LLM-1.5B-q4f32_1-MLC/
 if [ -f "tensor-cache.json" ] && [ ! -f "ndarray-cache.json" ]; then
-    echo "Renaming tensor-cache.json -> ndarray-cache.json (web-llm compat)"
-    mv tensor-cache.json ndarray-cache.json
+    echo "Copying tensor-cache.json -> ndarray-cache.json (compat with older web-llm)"
+    cp tensor-cache.json ndarray-cache.json
 fi
-if [ -f "tensor-cache-b16.json" ] && [ ! -f "ndarray-cache-b16.json" ]; then
-    mv tensor-cache-b16.json ndarray-cache-b16.json
+if [ -f "ndarray-cache.json" ] && [ ! -f "tensor-cache.json" ]; then
+    echo "Copying ndarray-cache.json -> tensor-cache.json (compat with web-llm 0.2.83+)"
+    cp ndarray-cache.json tensor-cache.json
 fi
 cd ..
 
@@ -33,10 +34,11 @@ echo ""
 echo "Total size:"
 du -sh TAID-LLM-1.5B-q4f32_1-MLC/
 echo ""
-echo "ndarray-cache.json check:"
+echo "tensor-cache.json check:"
 python -c "
-import json
-cache = json.load(open('TAID-LLM-1.5B-q4f32_1-MLC/ndarray-cache.json'))
+import json, os
+name = 'tensor-cache.json' if os.path.exists('TAID-LLM-1.5B-q4f32_1-MLC/tensor-cache.json') else 'ndarray-cache.json'
+cache = json.load(open(f'TAID-LLM-1.5B-q4f32_1-MLC/{name}'))
 meta = cache.get('metadata', {})
 print(f'  ParamSize:    {meta.get(\"ParamSize\", \"N/A\")}')
 print(f'  ParamBytes:   {meta.get(\"ParamBytes\", \"N/A\")}')
@@ -45,4 +47,4 @@ num_shards = len([r for r in cache.get('records', [])])
 print(f'  Num shards:   {num_shards}')
 "
 echo ""
-echo "=== Step 3 complete ==="
+echo "=== Step 4 complete ==="

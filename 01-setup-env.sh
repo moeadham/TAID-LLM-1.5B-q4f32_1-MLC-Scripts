@@ -48,6 +48,11 @@ conda activate mlc-convert
 echo "Installing mlc_llm nightly (CPU)..."
 pip install --cache-dir "$PIP_CACHE" --pre -U -f https://mlc.ai/wheels mlc-llm-nightly-cpu mlc-ai-nightly-cpu pytest
 
+# Install torch (CPU-only) + safetensors for vocab padding step
+echo "Installing torch (CPU) + safetensors for vocab padding..."
+pip install --cache-dir "$PIP_CACHE" torch --index-url https://download.pytorch.org/whl/cpu
+pip install --cache-dir "$PIP_CACHE" safetensors
+
 # Install git-lfs
 echo "Installing git-lfs..."
 conda install -c conda-forge git-lfs -y
