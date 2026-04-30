@@ -18,6 +18,15 @@ REPO_NAME="TAID-LLM-1.5B-q4f32_1-MLC"
 echo "=== Step 5: Upload to HuggingFace ==="
 echo "Uploading to: ${HF_USERNAME}/${REPO_NAME}"
 
+# Copy model card and license into output dir
+cp "$BASEDIR/MODEL_CARD.md" "./${REPO_NAME}/README.md"
+if [ -f "./TAID-LLM-1.5B/LICENSE" ]; then
+    cp "./TAID-LLM-1.5B/LICENSE" "./${REPO_NAME}/LICENSE"
+elif [ -f "./TAID-LLM-1.5B/LICENCE" ]; then
+    cp "./TAID-LLM-1.5B/LICENCE" "./${REPO_NAME}/LICENSE"
+fi
+echo "Copied MODEL_CARD.md -> README.md and LICENSE"
+
 # Login with token
 hf auth login --token "$HF_TOKEN"
 
