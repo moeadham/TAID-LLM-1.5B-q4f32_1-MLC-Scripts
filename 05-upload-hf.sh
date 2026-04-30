@@ -22,14 +22,14 @@ echo "Uploading to: ${HF_USERNAME}/${REPO_NAME}"
 pip install -q huggingface-hub
 
 # Login with token
-huggingface-cli login --token "$HF_TOKEN"
+hf login --token "$HF_TOKEN"
 
 # Create repo (ignore error if already exists)
-huggingface-cli repo create "$REPO_NAME" --type model || true
+hf repo create "$REPO_NAME" --type model || true
 
 # Upload all files
 echo "Uploading files (this may take a while for ~880MB)..."
-huggingface-cli upload "${HF_USERNAME}/${REPO_NAME}" "./${REPO_NAME}/" .
+hf upload "${HF_USERNAME}/${REPO_NAME}" "./${REPO_NAME}/" .
 
 echo ""
 echo "=== Step 5 complete ==="
