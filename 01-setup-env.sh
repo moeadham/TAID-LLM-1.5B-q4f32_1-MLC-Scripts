@@ -16,6 +16,10 @@ fi
 # Initialize conda for current shell
 eval "$($HOME/miniconda3/bin/conda shell.bash hook)"
 
+# Accept Anaconda ToS
+conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
+conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
+
 # Create conda environment
 if conda env list | grep -q "mlc-convert"; then
     echo "Conda env 'mlc-convert' already exists."
