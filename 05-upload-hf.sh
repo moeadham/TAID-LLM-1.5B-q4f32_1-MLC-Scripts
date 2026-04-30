@@ -5,13 +5,14 @@ BASEDIR="$(pwd)"
 eval "$($BASEDIR/.conda/bin/conda shell.bash hook)"
 conda activate mlc-convert
 
-# Set your HuggingFace username here
+# Set your HuggingFace username and token
 HF_USERNAME="${HF_USERNAME:-}"
-if [ -z "$HF_USERNAME" ]; then
-    echo "Usage: HF_USERNAME=your-username bash 05-upload-hf.sh"
-    echo "  or:  export HF_USERNAME=your-username && bash 05-upload-hf.sh"
+HF_TOKEN="${HF_TOKEN:-}"
+if [ -z "$HF_USERNAME" ] || [ -z "$HF_TOKEN" ]; then
+    echo "Usage: HF_USERNAME=your-username HF_TOKEN=hf_xxxx bash 05-upload-hf.sh"
     exit 1
 fi
+export HF_TOKEN
 
 REPO_NAME="TAID-LLM-1.5B-q4f32_1-MLC"
 
@@ -20,8 +21,8 @@ echo "Uploading to: ${HF_USERNAME}/${REPO_NAME}"
 
 pip install -q huggingface-hub
 
-# Login (will prompt for token if not already logged in)
-huggingface-cli whoami || huggingface-cli login
+# Login with token
+huggingface-cli login --token "$HF_TOKEN"
 
 # Create repo (ignore error if already exists)
 huggingface-cli repo create "$REPO_NAME" --type model || true
