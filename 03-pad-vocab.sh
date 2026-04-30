@@ -24,6 +24,17 @@ wget -q -O "$MODEL_DIR/tokenizer_config.json" "$QWEN_BASE/tokenizer_config.json"
 wget -q -O "$MODEL_DIR/tokenizer.json" "$QWEN_BASE/tokenizer.json"
 echo "  Replaced tokenizer_config.json and tokenizer.json"
 
+# Regenerate added_tokens.json from tokenizer_config.json
+# (TAID's original only has 3 tokens, need all 22)
+python -c "
+import json
+tc = json.load(open('$MODEL_DIR/tokenizer_config.json'))
+added = {v['content']: int(k) for k, v in tc['added_tokens_decoder'].items()}
+with open('$MODEL_DIR/added_tokens.json', 'w') as f:
+    json.dump(added, f, indent=2, ensure_ascii=False)
+print(f'  Regenerated added_tokens.json: {len(added)} tokens')
+"
+
 python << 'PYEOF'
 import json
 import os

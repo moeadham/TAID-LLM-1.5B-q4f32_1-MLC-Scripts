@@ -11,6 +11,7 @@ echo "This may take 5-15 minutes depending on CPU..."
 python -m mlc_llm convert_weight \
     ./TAID-LLM-1.5B/ \
     --quantization q4f32_1 \
+    --device cpu \
     -o ./TAID-LLM-1.5B-q4f32_1-MLC/
 
 # Keep both names: mlc_llm outputs tensor-cache.json (web-llm 0.2.83+),

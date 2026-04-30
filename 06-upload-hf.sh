@@ -33,9 +33,9 @@ hf auth login --token "$HF_TOKEN"
 # Create repo (ignore error if already exists)
 hf repos create "${HF_USERNAME}/${REPO_NAME}" || true
 
-# Upload all files
+# Upload all files, removing any stale files on the remote
 echo "Uploading files (this may take a while for ~880MB)..."
-hf upload "${HF_USERNAME}/${REPO_NAME}" "./${REPO_NAME}/" .
+hf upload "${HF_USERNAME}/${REPO_NAME}" "./${REPO_NAME}/" . --delete="*"
 
 echo ""
 echo "=== Step 6 complete ==="
