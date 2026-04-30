@@ -26,8 +26,9 @@ fi
 eval "$($CONDA_DIR/bin/conda shell.bash hook)"
 
 # Keep conda packages on the network volume too
-conda config --set pkgs_dirs "$BASEDIR/.conda-pkgs"
-conda config --set envs_dirs "$BASEDIR/.conda-envs"
+conda config --append pkgs_dirs "$BASEDIR/.conda-pkgs"
+conda config --append envs_dirs "$BASEDIR/.conda-envs"
+mkdir -p "$BASEDIR/.conda-pkgs" "$BASEDIR/.conda-envs"
 
 # Accept Anaconda ToS
 conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
